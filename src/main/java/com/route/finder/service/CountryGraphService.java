@@ -3,8 +3,6 @@ package com.route.finder.service;
 import com.route.finder.config.AppConfig;
 import com.route.finder.model.Country;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.ObjectMapper;
@@ -18,7 +16,6 @@ public class CountryGraphService {
     private final AppConfig appConfig;
     private final ObjectMapper objectMapper;
 
-    // adjacency list: CCA3 -> neighbors
     private Map<String, Set<String>> graph = Map.of();
 
     public CountryGraphService(AppConfig appConfig, ObjectMapper objectMapper) {
@@ -43,13 +40,12 @@ public class CountryGraphService {
         }
     }
 
-    private void buildGraph(Country[] countries){
+    private void buildGraph(Country[] countries) {
         if (countries == null) {
             this.graph = Map.of();
             return;
         }
 
-        // Build graph: ensure undirected edges
         Map<String, Set<String>> g = new HashMap<>();
         Set<String> known = new HashSet<>();
         for (Country c : countries) {
@@ -66,7 +62,6 @@ public class CountryGraphService {
                 if (rawTo == null) continue;
                 String to = rawTo.toUpperCase(Locale.ROOT);
 
-                // uneori pot exista coduri care nu sunt în set (rar), dar filtrăm safe
                 if (!known.contains(to)) continue;
 
                 g.computeIfAbsent(from, k -> new HashSet<>()).add(to);
@@ -74,14 +69,12 @@ public class CountryGraphService {
             }
         }
 
-        // Make immutable snapshot
         Map<String, Set<String>> immutable = new HashMap<>();
         for (var e : g.entrySet()) {
             immutable.put(e.getKey(), Collections.unmodifiableSet(e.getValue()));
         }
         this.graph = Collections.unmodifiableMap(immutable);
     }
-
 
     public boolean containsCountry(String cca3) {
         return graph.containsKey(cca3);

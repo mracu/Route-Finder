@@ -1,0 +1,5 @@
+services:
+  route-finder:
+    build: .
+    ports:
+      - "8080:8080"
